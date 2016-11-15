@@ -121,8 +121,7 @@ public class SubscriptionGroupManager extends ConfigManager {
     @Override
     public void decode(String jsonString) {
         if (jsonString != null) {
-            SubscriptionGroupManager obj =
-                    RemotingSerializable.fromJson(jsonString, SubscriptionGroupManager.class);
+            SubscriptionGroupManager obj = RemotingSerializable.fromJson(jsonString, SubscriptionGroupManager.class);
             if (obj != null) {
                 this.subscriptionGroupTable.putAll(obj.subscriptionGroupTable);
                 this.dataVersion.assignNewOne(obj.dataVersion);
@@ -133,8 +132,7 @@ public class SubscriptionGroupManager extends ConfigManager {
 
 
     private void printLoadDataWhenFirstBoot(final SubscriptionGroupManager sgm) {
-        Iterator<Entry<String, SubscriptionGroupConfig>> it =
-                sgm.getSubscriptionGroupTable().entrySet().iterator();
+        Iterator<Entry<String, SubscriptionGroupConfig>> it = sgm.getSubscriptionGroupTable().entrySet().iterator();
         while (it.hasNext()) {
             Entry<String, SubscriptionGroupConfig> next = it.next();
             log.info("load exist subscription group, {}", next.getValue().toString());
@@ -144,8 +142,7 @@ public class SubscriptionGroupManager extends ConfigManager {
 
     @Override
     public String configFilePath() {
-        return BrokerPathConfigHelper.getSubscriptionGroupPath(this.brokerController.getMessageStoreConfig()
-                .getStorePathRootDir());
+        return BrokerPathConfigHelper.getSubscriptionGroupPath(this.brokerController.getMessageStoreConfig().getStorePathRootDir());
     }
 
 

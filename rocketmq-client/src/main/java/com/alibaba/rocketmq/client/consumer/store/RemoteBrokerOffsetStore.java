@@ -45,8 +45,7 @@ public class RemoteBrokerOffsetStore implements OffsetStore {
     private final MQClientInstance mQClientFactory;
     private final String groupName;
     private final AtomicLong storeTimesTotal = new AtomicLong(0);
-    private ConcurrentHashMap<MessageQueue, AtomicLong> offsetTable =
-            new ConcurrentHashMap<MessageQueue, AtomicLong>();
+    private ConcurrentHashMap<MessageQueue, AtomicLong> offsetTable = new ConcurrentHashMap<>();
 
 
     public RemoteBrokerOffsetStore(MQClientInstance mQClientFactory, String groupName) {
@@ -123,7 +122,7 @@ public class RemoteBrokerOffsetStore implements OffsetStore {
         if (null == mqs || mqs.isEmpty())
             return;
 
-        final HashSet<MessageQueue> unusedMQ = new HashSet<MessageQueue>();
+        final HashSet<MessageQueue> unusedMQ = new HashSet<>();
         long times = this.storeTimesTotal.getAndIncrement();
 
         if (mqs != null && !mqs.isEmpty()) {
@@ -251,7 +250,7 @@ public class RemoteBrokerOffsetStore implements OffsetStore {
 
     @Override
     public Map<MessageQueue, Long> cloneOffsetTable(String topic) {
-        Map<MessageQueue, Long> cloneOffsetTable = new HashMap<MessageQueue, Long>();
+        Map<MessageQueue, Long> cloneOffsetTable = new HashMap<>();
         Iterator<MessageQueue> iterator = this.offsetTable.keySet().iterator();
         while (iterator.hasNext()) {
             MessageQueue mq = iterator.next();

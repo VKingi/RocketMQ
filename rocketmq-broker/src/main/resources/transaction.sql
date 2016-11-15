@@ -1,8 +1,8 @@
 CREATE TABLE `t_transaction` (
   `id`             BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `broker_name`    VARCHAR(50)         NOT NULL,
+  `broker_name`    VARCHAR(64)         NOT NULL,
   `offset`         BIGINT(20) UNSIGNED NOT NULL,
-  `producer_group` VARCHAR(50)         NOT NULL,
+  `producer_group` VARCHAR(64)         NOT NULL,
   `gmt_create`     DATETIME            NOT NULL,
   PRIMARY KEY (`id`),
   KEY `bpo_idx` (`broker_name`, `producer_group`, `offset`),

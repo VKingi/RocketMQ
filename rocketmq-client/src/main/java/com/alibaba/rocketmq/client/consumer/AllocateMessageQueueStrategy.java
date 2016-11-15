@@ -38,11 +38,11 @@ public interface AllocateMessageQueueStrategy {
      * @param cidAll        consumer set in current consumer group
      * @return
      */
-    public List<MessageQueue> allocate(//
-                                       final String consumerGroup,//
-                                       final String currentCID,//
-                                       final List<MessageQueue> mqAll,//
-                                       final List<String> cidAll//
+    List<MessageQueue> allocate(//
+                                final String consumerGroup,//
+                                final String currentCID,//
+                                final List<MessageQueue> mqAll,//
+                                final List<String> cidAll//
     );
 
 
@@ -51,5 +51,5 @@ public interface AllocateMessageQueueStrategy {
      *
      * @return
      */
-    public String getName();
+    String getName();
 }

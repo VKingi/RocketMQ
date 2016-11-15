@@ -294,13 +294,6 @@ public class ClientManageProcessor implements NettyRequestProcessor {
                         data.toString(),//
                         RemotingHelper.parseChannelRemoteAddr(ctx.channel())//
                 );
-
-                // todo:有可能会有频繁变更
-                // for (SubscriptionData subscriptionData :
-                // data.getSubscriptionDataSet()) {
-                // this.brokerController.getTopicConfigManager().updateTopicUnitSubFlag(
-                // subscriptionData.getTopic(), data.isUnitMode());
-                // }
             }
         }
 

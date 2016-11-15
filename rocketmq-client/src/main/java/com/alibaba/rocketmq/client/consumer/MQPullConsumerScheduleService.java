@@ -39,12 +39,10 @@ import java.util.concurrent.TimeUnit;
 public class MQPullConsumerScheduleService {
     private final Logger log = ClientLogger.getLog();
     private final MessageQueueListener messageQueueListener = new MessageQueueListenerImpl();
-    private final ConcurrentHashMap<MessageQueue, PullTaskImpl> taskTable =
-            new ConcurrentHashMap<MessageQueue, PullTaskImpl>();
+    private final ConcurrentHashMap<MessageQueue, PullTaskImpl> taskTable = new ConcurrentHashMap<>();
     private DefaultMQPullConsumer defaultMQPullConsumer;
     private int pullThreadNums = 20;
-    private ConcurrentHashMap<String /* topic */, PullTaskCallback> callbackTable =
-            new ConcurrentHashMap<String, PullTaskCallback>();
+    private ConcurrentHashMap<String /* topic */, PullTaskCallback> callbackTable = new ConcurrentHashMap<>();
     private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
 
     public MQPullConsumerScheduleService(final String consumerGroup) {

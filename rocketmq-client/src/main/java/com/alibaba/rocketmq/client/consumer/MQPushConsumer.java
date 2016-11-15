@@ -77,8 +77,7 @@ public interface MQPushConsumer extends MQConsumer {
      *            for your code safety
      * @throws MQClientException
      */
-    void subscribe(final String topic, final String fullClassName, final String filterClassSource)
-            throws MQClientException;
+    void subscribe(final String topic, final String fullClassName, final String filterClassSource) throws MQClientException;
 
 
     /**

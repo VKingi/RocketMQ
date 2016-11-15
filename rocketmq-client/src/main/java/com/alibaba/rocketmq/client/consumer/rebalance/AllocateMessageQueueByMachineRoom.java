@@ -47,7 +47,7 @@ public class AllocateMessageQueueByMachineRoom implements AllocateMessageQueueSt
         if (currentIndex < 0) {
             return result;
         }
-        List<MessageQueue> premqAll = new ArrayList<MessageQueue>();
+        List<MessageQueue> premqAll = new ArrayList<>();
         for (MessageQueue mq : mqAll) {
             String[] temp = mq.getBrokerName().split("@");
             if (temp.length == 2 && consumeridcs.contains(temp[0])) {

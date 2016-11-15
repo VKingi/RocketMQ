@@ -19,5 +19,5 @@ import com.alibaba.rocketmq.common.message.MessageQueue;
 
 
 public interface PullTaskCallback {
-    public void doPullTask(final MessageQueue mq, final PullTaskContext context);
+    void doPullTask(final MessageQueue mq, final PullTaskContext context);
 }

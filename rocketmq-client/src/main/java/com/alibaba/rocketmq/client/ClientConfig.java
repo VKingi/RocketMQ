@@ -28,8 +28,7 @@ import com.alibaba.rocketmq.remoting.common.RemotingUtil;
  * @since 2013-7-24
  */
 public class ClientConfig {
-    private String namesrvAddr = System.getProperty(MixAll.NAMESRV_ADDR_PROPERTY,
-            System.getenv(MixAll.NAMESRV_ADDR_ENV));
+    private String namesrvAddr = System.getProperty(MixAll.NAMESRV_ADDR_PROPERTY, System.getenv(MixAll.NAMESRV_ADDR_ENV));
     private String clientIP = RemotingUtil.getLocalAddress();
     private String instanceName = System.getProperty("rocketmq.client.name", "DEFAULT");
     private int clientCallbackExecutorThreads = Runtime.getRuntime().availableProcessors();
@@ -45,6 +44,9 @@ public class ClientConfig {
      * Offset persistent interval for consumer
      */
     private int persistConsumerOffsetInterval = 1000 * 5;
+    private boolean unitMode = false;
+    private String unitName;
+
 
     public String buildMQClientId() {
         StringBuilder sb = new StringBuilder();
@@ -52,6 +54,10 @@ public class ClientConfig {
 
         sb.append("@");
         sb.append(this.getInstanceName());
+        if(!UtilAll.isBlank(this.unitName)) {
+            sb.append("@");
+            sb.append(this.unitName);
+        }
 
         return sb.toString();
     }
@@ -70,6 +76,8 @@ public class ClientConfig {
         this.pollNameServerInteval = cc.pollNameServerInteval;
         this.heartbeatBrokerInterval = cc.heartbeatBrokerInterval;
         this.persistConsumerOffsetInterval = cc.persistConsumerOffsetInterval;
+        this.unitMode = cc.unitMode;
+        this.unitName = cc.unitName;
     }
 
     public ClientConfig cloneClientConfig() {
@@ -81,6 +89,8 @@ public class ClientConfig {
         cc.pollNameServerInteval = pollNameServerInteval;
         cc.heartbeatBrokerInterval = heartbeatBrokerInterval;
         cc.persistConsumerOffsetInterval = persistConsumerOffsetInterval;
+        cc.unitMode = unitMode;
+        cc.unitName = unitName;
         return cc;
     }
 
@@ -140,12 +150,32 @@ public class ClientConfig {
         this.persistConsumerOffsetInterval = persistConsumerOffsetInterval;
     }
 
+
+    public String getUnitName() {
+        return unitName;
+    }
+
+
+    public void setUnitName(String unitName) {
+        this.unitName = unitName;
+    }
+
+
+    public boolean isUnitMode() {
+        return unitMode;
+    }
+
+
+    public void setUnitMode(boolean unitMode) {
+        this.unitMode = unitMode;
+    }
+
+
     @Override
     public String toString() {
-        return "ClientConfig [namesrvAddr=" + namesrvAddr + ", clientIP=" + clientIP + ", instanceName="
-                + instanceName + ", clientCallbackExecutorThreads=" + clientCallbackExecutorThreads
-                + ", pollNameServerInteval=" + pollNameServerInteval + ", heartbeatBrokerInterval="
-                + heartbeatBrokerInterval + ", persistConsumerOffsetInterval="
-                + persistConsumerOffsetInterval + "]";
+        return "ClientConfig [namesrvAddr=" + namesrvAddr + ", clientIP=" + clientIP + ", instanceName=" + instanceName
+                + ", clientCallbackExecutorThreads=" + clientCallbackExecutorThreads + ", pollNameServerInteval=" + pollNameServerInteval
+                + ", heartbeatBrokerInterval=" + heartbeatBrokerInterval + ", persistConsumerOffsetInterval="
+                + persistConsumerOffsetInterval + ", unitMode=" + unitMode + ", unitName=" + unitName + "]";
     }
 }

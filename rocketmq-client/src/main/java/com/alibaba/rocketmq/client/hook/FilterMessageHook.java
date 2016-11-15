@@ -20,8 +20,8 @@ package com.alibaba.rocketmq.client.hook;
  * @since 2014-3-19
  */
 public interface FilterMessageHook {
-    public String hookName();
+    String hookName();
 
 
-    public void filterMessage(final FilterMessageContext context);
+    void filterMessage(final FilterMessageContext context);
 }
