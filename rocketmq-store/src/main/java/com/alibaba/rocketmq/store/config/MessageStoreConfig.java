@@ -133,6 +133,8 @@ public class MessageStoreConfig {
     // slave 是否需要纠正位点
     private boolean offsetCheckInSlave = false;
 
+    private boolean diskFallRecorded = true;
+
     public int getMapedFileSizeCommitLog() {
         return mapedFileSizeCommitLog;
     }
@@ -595,5 +597,13 @@ public class MessageStoreConfig {
 
     public void setOffsetCheckInSlave(boolean offsetCheckInSlave) {
         this.offsetCheckInSlave = offsetCheckInSlave;
+    }
+
+    public boolean isDiskFallRecorded() {
+        return diskFallRecorded;
+    }
+
+    public void setDiskFallRecorded(final boolean diskFallRecorded) {
+        this.diskFallRecorded = diskFallRecorded;
     }
 }

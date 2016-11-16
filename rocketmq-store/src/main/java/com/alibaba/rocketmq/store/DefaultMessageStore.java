@@ -537,7 +537,7 @@ public class DefaultMessageStore implements MessageStore {
 
                         int i = 0;
                         final int MaxFilterMessageCount = 16000;
-                        boolean diskFallRecorded = false;
+                        boolean diskFallRecorded = this.messageStoreConfig.isDiskFallRecorded();
                         for (; i < bufferConsumeQueue.getSize() && i < MaxFilterMessageCount; i +=
                                 ConsumeQueue.CQStoreUnitSize) {
                             long offsetPy = bufferConsumeQueue.getByteBuffer().getLong();
@@ -571,13 +571,7 @@ public class DefaultMessageStore implements MessageStore {
                                     status = GetMessageStatus.FOUND;
                                     nextPhyFileStartOffset = Long.MIN_VALUE;
 
-                                    // 统计读取磁盘落后情况
-                                    if (diskFallRecorded) {
-                                        diskFallRecorded = true;
-                                        long fallBehind = consumeQueue.getMaxPhysicOffset() - offsetPy;
-                                        brokerStatsManager.recordDiskFallBehind(group, topic, queueId,
-                                                fallBehind);
-                                    }
+
                                 } else {
                                     if (getResult.getBufferTotalSize() == 0) {
                                         status = GetMessageStatus.MESSAGE_WAS_REMOVING;
@@ -596,6 +590,12 @@ public class DefaultMessageStore implements MessageStore {
                                             + " server: " + tagsCode);
                                 }
                             }
+                        }
+
+                        // 统计读取磁盘落后情况
+                        if (diskFallRecorded) {
+                            long fallBehind = maxOffsetPy - maxPhyOffsetPulling;
+                            brokerStatsManager.recordDiskFallBehind(group, topic, queueId, fallBehind);
                         }
 
                         nextBeginOffset = offset + (i / ConsumeQueue.CQStoreUnitSize);
