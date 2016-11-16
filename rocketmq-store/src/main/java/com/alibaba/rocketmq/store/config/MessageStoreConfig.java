@@ -130,6 +130,8 @@ public class MessageStoreConfig {
     @ImportantField
     private boolean cleanFileForciblyEnable = true;
 
+    // slave 是否需要纠正位点
+    private boolean offsetCheckInSlave = false;
 
     public int getMapedFileSizeCommitLog() {
         return mapedFileSizeCommitLog;
@@ -585,5 +587,13 @@ public class MessageStoreConfig {
 
     public void setStorePathRootDir(String storePathRootDir) {
         this.storePathRootDir = storePathRootDir;
+    }
+
+    public boolean isOffsetCheckInSlave() {
+        return offsetCheckInSlave;
+    }
+
+    public void setOffsetCheckInSlave(boolean offsetCheckInSlave) {
+        this.offsetCheckInSlave = offsetCheckInSlave;
     }
 }

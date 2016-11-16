@@ -452,7 +452,7 @@ public class PullMessageProcessor implements NettyRequestProcessor {
                     break;
                 case ResponseCode.PULL_OFFSET_MOVED:
                     if (this.brokerController.getMessageStoreConfig().getBrokerRole() != BrokerRole.SLAVE
-                            || this.brokerController.getBrokerConfig().isOffsetCheckInSlave()) {
+                            || this.brokerController.getMessageStoreConfig().isOffsetCheckInSlave()) {
                         MessageQueue mq = new MessageQueue();
                         mq.setTopic(requestHeader.getTopic());
                         mq.setQueueId(requestHeader.getQueueId());

@@ -468,6 +468,13 @@ public class DefaultMessageStore implements MessageStore {
         return systemClock;
     }
 
+    private long nextOffsetCorrection(long oldOffset, long newOffset) {
+        long nextOffset = oldOffset;
+        if (this.getMessageStoreConfig().getBrokerRole() != BrokerRole.SLAVE || this.getMessageStoreConfig().isOffsetCheckInSlave()) {
+            nextOffset = newOffset;
+        }
+        return nextOffset;
+    }
 
     public GetMessageResult getMessage(final String group, final String topic, final int queueId,
                                        final long offset, final int maxMsgNums, final SubscriptionData subscriptionData) {
@@ -505,19 +512,19 @@ public class DefaultMessageStore implements MessageStore {
 
             if (maxOffset == 0) {
                 status = GetMessageStatus.NO_MESSAGE_IN_QUEUE;
-                nextBeginOffset = 0;
+                nextBeginOffset = nextOffsetCorrection(offset, 0);
             } else if (offset < minOffset) {
                 status = GetMessageStatus.OFFSET_TOO_SMALL;
-                nextBeginOffset = minOffset;
+                nextBeginOffset = nextOffsetCorrection(offset, minOffset);
             } else if (offset == maxOffset) {
                 status = GetMessageStatus.OFFSET_OVERFLOW_ONE;
-                nextBeginOffset = offset;
+                nextBeginOffset = nextOffsetCorrection(offset, offset);
             } else if (offset > maxOffset) {
                 status = GetMessageStatus.OFFSET_OVERFLOW_BADLY;
                 if (0 == minOffset) {
-                    nextBeginOffset = minOffset;
+                    nextBeginOffset = nextOffsetCorrection(offset, minOffset);
                 } else {
-                    nextBeginOffset = maxOffset;
+                    nextBeginOffset = nextOffsetCorrection(offset, maxOffset);
                 }
             } else {
                 SelectMapedBufferResult bufferConsumeQueue = consumeQueue.getIndexBuffer(offset);
@@ -605,7 +612,7 @@ public class DefaultMessageStore implements MessageStore {
                     }
                 } else {
                     status = GetMessageStatus.OFFSET_FOUND_NULL;
-                    nextBeginOffset = consumeQueue.rollNextFile(offset);
+                    nextBeginOffset = nextOffsetCorrection(offset, consumeQueue.rollNextFile(offset));
                     log.warn("consumer request topic: " + topic + "offset: " + offset + " minOffset: "
                             + minOffset + " maxOffset: " + maxOffset + ", but access logic queue failed.");
                 }
@@ -614,7 +621,7 @@ public class DefaultMessageStore implements MessageStore {
         // 请求的队列Id没有
         else {
             status = GetMessageStatus.NO_MATCHED_LOGIC_QUEUE;
-            nextBeginOffset = 0;
+            nextBeginOffset = nextOffsetCorrection(offset, 0);
         }
 
         if (GetMessageStatus.FOUND == status) {
