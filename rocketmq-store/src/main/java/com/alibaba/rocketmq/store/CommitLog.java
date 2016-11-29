@@ -47,24 +47,22 @@ import java.util.concurrent.TimeUnit;
  * @since 2013-7-21
  */
 public class CommitLog {
+    private static final Logger log = LoggerFactory.getLogger(LoggerName.StoreLoggerName);
     // Message's MAGIC CODE daa320a7
     public final static int MessageMagicCode = 0xAABBCCDD ^ 1880681586 + 8;
-    private static final Logger log = LoggerFactory.getLogger(LoggerName.StoreLoggerName);
     // End of file empty MAGIC CODE cbd43194
     private final static int BlankMagicCode = 0xBBCCDDEE ^ 1880681586 + 8;
     private final MapedFileQueue mapedFileQueue;
     private final DefaultMessageStore defaultMessageStore;
     private final FlushCommitLogService flushCommitLogService;
     private final AppendMessageCallback appendMessageCallback;
-    private HashMap<String/* topic-queueid */, Long/* offset */> topicQueueTable = new HashMap<String, Long>(
-            1024);
+    private HashMap<String/* topic-queueid */, Long/* offset */> topicQueueTable = new HashMap<>(1024);
 
 
     public CommitLog(final DefaultMessageStore defaultMessageStore) {
-        this.mapedFileQueue =
-                new MapedFileQueue(defaultMessageStore.getMessageStoreConfig().getStorePathCommitLog(),
-                        defaultMessageStore.getMessageStoreConfig().getMapedFileSizeCommitLog(),
-                        defaultMessageStore.getAllocateMapedFileService());
+        this.mapedFileQueue = new MapedFileQueue(defaultMessageStore.getMessageStoreConfig().getStorePathCommitLog(),
+                defaultMessageStore.getMessageStoreConfig().getMapedFileSizeCommitLog(),
+                defaultMessageStore.getAllocateMapedFileService());
         this.defaultMessageStore = defaultMessageStore;
 
         if (FlushDiskType.SYNC_FLUSH == defaultMessageStore.getMessageStoreConfig().getFlushDiskType()) {
@@ -73,9 +71,7 @@ public class CommitLog {
             this.flushCommitLogService = new FlushRealTimeService();
         }
 
-        this.appendMessageCallback =
-                new DefaultAppendMessageCallback(defaultMessageStore.getMessageStoreConfig()
-                        .getMaxMessageSize());
+        this.appendMessageCallback = new DefaultAppendMessageCallback(defaultMessageStore.getMessageStoreConfig().getMaxMessageSize());
     }
 
 
@@ -121,14 +117,11 @@ public class CommitLog {
     }
 
 
-    public int deleteExpiredFile(//
-                                 final long expiredTime, //
-                                 final int deleteFilesInterval, //
-                                 final long intervalForcibly,//
-                                 final boolean cleanImmediately//
-    ) {
-        return this.mapedFileQueue.deleteExpiredFileByTime(expiredTime, deleteFilesInterval,
-                intervalForcibly, cleanImmediately);
+    public int deleteExpiredFile(final long expiredTime,
+                                 final int deleteFilesInterval,
+                                 final long intervalForcibly,
+                                 final boolean cleanImmediately) {
+        return this.mapedFileQueue.deleteExpiredFileByTime(expiredTime, deleteFilesInterval, intervalForcibly, cleanImmediately);
     }
 
 
@@ -136,7 +129,7 @@ public class CommitLog {
      * Read CommitLog data, use data replication
      */
     public SelectMapedBufferResult getData(final long offset) {
-        return this.getData(offset, (0 == offset ? true : false));
+        return this.getData(offset, (0 == offset));
     }
 
 
@@ -170,8 +163,7 @@ public class CommitLog {
             long processOffset = mapedFile.getFileFromOffset();
             long mapedFileOffset = 0;
             while (true) {
-                DispatchRequest dispatchRequest =
-                        this.checkMessageAndReturnSize(byteBuffer, checkCRCOnRecover);
+                DispatchRequest dispatchRequest = this.checkMessageAndReturnSize(byteBuffer, checkCRCOnRecover);
                 int size = dispatchRequest.getMsgSize();
                 // Normal data
                 if (size > 0) {
@@ -191,8 +183,7 @@ public class CommitLog {
                     index++;
                     if (index >= mapedFiles.size()) {
                         // Current branch can not happen
-                        log.info("recover last 3 physics file over, last maped file "
-                                + mapedFile.getFileName());
+                        log.info("recover last 3 physics file over, last maped file " + mapedFile.getFileName());
                         break;
                     } else {
                         mapedFile = mapedFiles.get(index);
@@ -222,11 +213,9 @@ public class CommitLog {
      * @return 0 Come the end of the file // >0 Normal messages // -1 Message
      *         checksum failure
      */
-    public DispatchRequest checkMessageAndReturnSize(java.nio.ByteBuffer byteBuffer, final boolean checkCRC,
-                                                     final boolean readBody) {
+    public DispatchRequest checkMessageAndReturnSize(java.nio.ByteBuffer byteBuffer, final boolean checkCRC, final boolean readBody) {
         try {
-            java.nio.ByteBuffer byteBufferMessage =
-                    ((DefaultAppendMessageCallback) this.appendMessageCallback).getMsgStoreItemMemory();
+            java.nio.ByteBuffer byteBufferMessage = ((DefaultAppendMessageCallback) this.appendMessageCallback).getMsgStoreItemMemory();
             byte[] bytesContent = byteBufferMessage.array();
 
             // 1 TOTALSIZE
@@ -252,7 +241,6 @@ public class CommitLog {
 
             // 5 FLAG
             int flag = byteBuffer.getInt();
-            flag = flag + 0;
 
             // 6 QUEUEOFFSET
             long queueOffset = byteBuffer.getLong();
@@ -265,7 +253,6 @@ public class CommitLog {
 
             // 9 BORNTIMESTAMP
             long bornTimeStamp = byteBuffer.getLong();
-            bornTimeStamp = bornTimeStamp + 0;
 
             // 10 BORNHOST（IP+PORT）
             byteBuffer.get(bytesContent, 0, 8);
@@ -319,9 +306,7 @@ public class CommitLog {
                 keys = propertiesMap.get(MessageConst.PROPERTY_KEYS);
                 String tags = propertiesMap.get(MessageConst.PROPERTY_TAGS);
                 if (tags != null && tags.length() > 0) {
-                    tagsCode =
-                            MessageExtBrokerInner.tagsString2tagsCode(
-                                    MessageExt.parseTopicFilterType(sysFlag), tags);
+                    tagsCode = MessageExtBrokerInner.tagsString2tagsCode(MessageExt.parseTopicFilterType(sysFlag), tags);
                 }
 
                 producerGroup = propertiesMap.get(MessageConst.PROPERTY_PRODUCER_GROUP);
@@ -331,16 +316,13 @@ public class CommitLog {
                     if (ScheduleMessageService.SCHEDULE_TOPIC.equals(topic) && t != null) {
                         int delayLevel = Integer.parseInt(t);
 
-                        if (delayLevel > this.defaultMessageStore.getScheduleMessageService()
-                                .getMaxDelayLevel()) {
-                            delayLevel =
-                                    this.defaultMessageStore.getScheduleMessageService().getMaxDelayLevel();
+                        if (delayLevel > this.defaultMessageStore.getScheduleMessageService().getMaxDelayLevel()) {
+                            delayLevel = this.defaultMessageStore.getScheduleMessageService().getMaxDelayLevel();
                         }
 
                         if (delayLevel > 0) {
                             tagsCode =
-                                    this.defaultMessageStore.getScheduleMessageService()
-                                            .computeDeliverTimestamp(delayLevel, storeTimestamp);
+                                    this.defaultMessageStore.getScheduleMessageService().computeDeliverTimestamp(delayLevel, storeTimestamp);
                         }
                     }
                 }

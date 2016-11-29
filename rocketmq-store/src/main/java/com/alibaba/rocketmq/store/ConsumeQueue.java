@@ -154,8 +154,7 @@ public class ConsumeQueue {
             // low:第一个索引信息的起始位置
             // minLogicOffset有设置值则从
             // minLogicOffset-mapedFile.getFileFromOffset()位置开始才是有效值
-            int low =
-                    minLogicOffset > mapedFile.getFileFromOffset() ? (int) (minLogicOffset - mapedFile
+            int low = minLogicOffset > mapedFile.getFileFromOffset() ? (int) (minLogicOffset - mapedFile
                             .getFileFromOffset()) : 0;
 
             // high:最后一个索引信息的起始位置
@@ -176,8 +175,7 @@ public class ConsumeQueue {
                         int size = byteBuffer.getInt();
 
                         // 比较时间, 折半
-                        long storeTime =
-                                this.defaultMessageStore.getCommitLog().pickupStoretimestamp(phyOffset, size);
+                        long storeTime = this.defaultMessageStore.getCommitLog().pickupStoretimestamp(phyOffset, size);
                         if (storeTime < 0) {
                             // 没有从物理文件找到消息，此时直接返回0
                             return 0;
@@ -377,9 +375,8 @@ public class ConsumeQueue {
     }
 
 
-    public void putMessagePostionInfoWrapper(long offset, int size, long tagsCode, long storeTimestamp,
-                                             long logicOffset) {
-        final int MaxRetries = 5;
+    public void putMessagePostionInfoWrapper(long offset, int size, long tagsCode, long storeTimestamp, long logicOffset) {
+        final int MaxRetries = 30;
         boolean canWrite = this.defaultMessageStore.getRunningFlags().isWriteable();
         for (int i = 0; i < MaxRetries && canWrite; i++) {
             boolean result = this.putMessagePostionInfo(offset, size, tagsCode, logicOffset);
@@ -447,15 +444,13 @@ public class ConsumeQueue {
                 long currentLogicOffset = mapedFile.getWrotePostion() + mapedFile.getFileFromOffset();
                 if (expectLogicOffset != currentLogicOffset) {
                     // XXX: warn and notify me
-                    logError
-                            .warn(
-                                    "[BUG]logic queue order maybe wrong, expectLogicOffset: {} currentLogicOffset: {} Topic: {} QID: {} Diff: {}",//
-                                    expectLogicOffset, //
-                                    currentLogicOffset,//
-                                    this.topic,//
-                                    this.queueId,//
-                                    expectLogicOffset - currentLogicOffset//
-                            );
+                    logError.warn("[BUG]logic queue order maybe wrong, expectLogicOffset: {} currentLogicOffset: {} Topic: {} QID: {} Diff: {}",//
+                            expectLogicOffset, //
+                            currentLogicOffset,//
+                            this.topic,//
+                            this.queueId,//
+                            expectLogicOffset - currentLogicOffset//
+                    );
                 }
             }
 

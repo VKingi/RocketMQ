@@ -20,6 +20,7 @@ import com.alibaba.rocketmq.common.consumer.ConsumeFromWhere;
 import com.alibaba.rocketmq.common.protocol.heartbeat.ConsumeType;
 import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 import com.alibaba.rocketmq.common.protocol.heartbeat.SubscriptionData;
+import com.google.common.collect.Lists;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,15 +42,12 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ConsumerGroupInfo {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.BrokerLoggerName);
     private final String groupName;
-    private final ConcurrentHashMap<String/* Topic */, SubscriptionData> subscriptionTable =
-            new ConcurrentHashMap<String, SubscriptionData>();
-    private final ConcurrentHashMap<Channel, ClientChannelInfo> channelInfoTable =
-            new ConcurrentHashMap<Channel, ClientChannelInfo>(16);
+    private final ConcurrentHashMap<String/* Topic */, SubscriptionData> subscriptionTable = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Channel, ClientChannelInfo> channelInfoTable = new ConcurrentHashMap<>(16);
     private volatile ConsumeType consumeType;
     private volatile MessageModel messageModel;
     private volatile ConsumeFromWhere consumeFromWhere;
     private volatile long lastUpdateTimestamp = System.currentTimeMillis();
-
 
     public ConsumerGroupInfo(String groupName, ConsumeType consumeType, MessageModel messageModel,
                              ConsumeFromWhere consumeFromWhere) {
@@ -58,7 +56,6 @@ public class ConsumerGroupInfo {
         this.messageModel = messageModel;
         this.consumeFromWhere = consumeFromWhere;
     }
-
 
     public ClientChannelInfo findChannel(final String clientId) {
         Iterator<Entry<Channel, ClientChannelInfo>> it = this.channelInfoTable.entrySet().iterator();
@@ -72,25 +69,17 @@ public class ConsumerGroupInfo {
         return null;
     }
 
-
     public ConcurrentHashMap<String, SubscriptionData> getSubscriptionTable() {
         return subscriptionTable;
     }
-
 
     public ConcurrentHashMap<Channel, ClientChannelInfo> getChannelInfoTable() {
         return channelInfoTable;
     }
 
-
     public List<Channel> getAllChannel() {
-        List<Channel> result = new ArrayList<Channel>();
-
-        result.addAll(this.channelInfoTable.keySet());
-
-        return result;
+        return Lists.newArrayList(this.channelInfoTable.keySet());
     }
-
 
     public List<String> getAllClientId() {
         List<String> result = new ArrayList<String>();
@@ -106,7 +95,6 @@ public class ConsumerGroupInfo {
         return result;
     }
 
-
     public void unregisterChannel(final ClientChannelInfo clientChannelInfo) {
         ClientChannelInfo old = this.channelInfoTable.remove(clientChannelInfo.getChannel());
         if (old != null) {
@@ -114,19 +102,16 @@ public class ConsumerGroupInfo {
         }
     }
 
-
     public boolean doChannelCloseEvent(final String remoteAddr, final Channel channel) {
         final ClientChannelInfo info = this.channelInfoTable.remove(channel);
         if (info != null) {
-            log.warn(
-                    "NETTY EVENT: remove not active channel[{}] from ConsumerGroupInfo groupChannelTable, consumer group: {}",
+            log.warn("NETTY EVENT: remove not active channel[{}] from ConsumerGroupInfo groupChannelTable, consumer group: {}",
                     info.toString(), groupName);
             return true;
         }
 
         return false;
     }
-
 
     /**
      * 返回值表示是否发生变更
@@ -150,8 +135,7 @@ public class ConsumerGroupInfo {
             infoOld = infoNew;
         } else {
             if (!infoOld.getClientId().equals(infoNew.getClientId())) {
-                log.error(
-                        "[BUG] consumer channel exist in broker, but clientId not equal. GROUP: {} OLD: {} NEW: {} ",
+                log.error("[BUG] consumer channel exist in broker, but clientId not equal. GROUP: {} OLD: {} NEW: {} ",
                         this.groupName,//
                         infoOld.toString(),//
                         infoNew.toString());

@@ -188,16 +188,11 @@ public class BrokerStartup {
             if (null != namesrvAddr) {
                 try {
                     String[] addrArray = namesrvAddr.split(";");
-                    if (addrArray != null) {
-                        for (String addr : addrArray) {
-                            RemotingUtil.string2SocketAddress(addr);
-                        }
+                    for (String addr : addrArray) {
+                        RemotingUtil.string2SocketAddress(addr);
                     }
                 } catch (Exception e) {
-                    System.out
-                            .printf(
-                                    "The Name Server Address[%s] illegal, please set it as follows, \"127.0.0.1:9876;192.168.0.1:9876\"\n",
-                                    namesrvAddr);
+                    System.out.printf("The Name Server Address[%s] illegal, please set it as follows, \"127.0.0.1:9876;192.168.0.1:9876\"\n", namesrvAddr);
                     System.exit(-3);
                 }
             }
@@ -254,7 +249,6 @@ public class BrokerStartup {
                 private volatile boolean hasShutdown = false;
                 private AtomicInteger shutdownTimes = new AtomicInteger(0);
 
-
                 @Override
                 public void run() {
                     synchronized (this) {
@@ -284,8 +278,7 @@ public class BrokerStartup {
         try {
             // 启动服务控制对象
             controller.start();
-            String tip =
-                    "The broker[" + controller.getBrokerConfig().getBrokerName() + ", "
+            String tip = "The broker[" + controller.getBrokerConfig().getBrokerName() + ", "
                             + controller.getBrokerAddr() + "] boot success.";
 
             if (null != controller.getBrokerConfig().getNamesrvAddr()) {

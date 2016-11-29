@@ -38,34 +38,26 @@ public class ClientHousekeepingService implements ChannelEventListener {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.BrokerLoggerName);
     private final BrokerController brokerController;
 
-    private ScheduledExecutorService scheduledExecutorService = Executors
-            .newSingleThreadScheduledExecutor(new ThreadFactoryImpl("ClientHousekeepingScheduledThread"));
-
+    private ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("ClientHousekeepingScheduledThread"));
 
     public ClientHousekeepingService(final BrokerController brokerController) {
         this.brokerController = brokerController;
     }
 
-
     public void start() {
         // 定时扫描过期的连接
-        this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    ClientHousekeepingService.this.scanExceptionChannel();
-                } catch (Exception e) {
-                    log.error("", e);
-                }
+        this.scheduledExecutorService.scheduleAtFixedRate(() -> {
+            try {
+                ClientHousekeepingService.this.scanExceptionChannel();
+            } catch (Exception e) {
+                log.error("", e);
             }
         }, 1000 * 10, 1000 * 10, TimeUnit.MILLISECONDS);
     }
 
-
     public void shutdown() {
         this.scheduledExecutorService.shutdown();
     }
-
 
     private void scanExceptionChannel() {
         this.brokerController.getProducerManager().scanNotActiveChannel();
@@ -73,12 +65,10 @@ public class ClientHousekeepingService implements ChannelEventListener {
         this.brokerController.getFilterServerManager().scanNotActiveChannel();
     }
 
-
     @Override
     public void onChannelConnect(String remoteAddr, Channel channel) {
 
     }
-
 
     @Override
     public void onChannelClose(String remoteAddr, Channel channel) {
@@ -87,14 +77,12 @@ public class ClientHousekeepingService implements ChannelEventListener {
         this.brokerController.getFilterServerManager().doChannelCloseEvent(remoteAddr, channel);
     }
 
-
     @Override
     public void onChannelException(String remoteAddr, Channel channel) {
         this.brokerController.getProducerManager().doChannelCloseEvent(remoteAddr, channel);
         this.brokerController.getConsumerManager().doChannelCloseEvent(remoteAddr, channel);
         this.brokerController.getFilterServerManager().doChannelCloseEvent(remoteAddr, channel);
     }
-
 
     @Override
     public void onChannelIdle(String remoteAddr, Channel channel) {
