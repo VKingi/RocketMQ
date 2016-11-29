@@ -41,7 +41,7 @@ public interface RemotingClient extends RemotingService {
 
 
     public MessageCommand invokeSync(final String addr, final MessageCommand request,
-                                      final long timeoutMillis) throws InterruptedException, RemotingConnectException,
+                                     final long timeoutMillis) throws InterruptedException, RemotingConnectException,
             RemotingSendRequestException, RemotingTimeoutException;
 
 

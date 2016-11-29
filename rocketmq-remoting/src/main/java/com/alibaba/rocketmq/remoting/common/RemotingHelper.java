@@ -51,7 +51,7 @@ public class RemotingHelper {
      * 短连接调用 TODO
      */
     public static MessageCommand invokeSync(final String addr, final MessageCommand request,
-                                             final long timeoutMillis) throws InterruptedException, RemotingConnectException,
+                                            final long timeoutMillis) throws InterruptedException, RemotingConnectException,
             RemotingSendRequestException, RemotingTimeoutException {
         long beginTime = System.currentTimeMillis();
         SocketAddress socketAddress = RemotingUtil.string2SocketAddress(addr);

@@ -354,11 +354,11 @@ public interface MQAdminExt extends MQAdmin {
      * 通过 server ip 获取 project 信息
      *
      * @param ip
+     * @return
      * @throws RemotingException
      * @throws MQBrokerException
      * @throws InterruptedException
      * @throws MQClientException
-     * @return
      */
     public String getProjectGroupByIp(String ip) throws RemotingException, MQBrokerException,
             InterruptedException, MQClientException;
@@ -368,11 +368,11 @@ public interface MQAdminExt extends MQAdmin {
      * 通过 project 获取所有的 server ip 信息
      *
      * @param projectGroup
+     * @return
      * @throws RemotingException
      * @throws MQBrokerException
      * @throws InterruptedException
      * @throws MQClientException
-     * @return
      */
     public String getIpsByProjectGroup(String projectGroup) throws RemotingException, MQBrokerException,
             InterruptedException, MQClientException;
@@ -398,11 +398,11 @@ public interface MQAdminExt extends MQAdmin {
      * @param topic
      * @param timestamp
      * @param force
+     * @return
      * @throws RemotingException
      * @throws MQBrokerException
      * @throws InterruptedException
      * @throws MQClientException
-     * @return
      */
     public List<RollbackStats> resetOffsetByTimestampOld(String consumerGroup, String topic, long timestamp,
                                                          boolean force) throws RemotingException, MQBrokerException, InterruptedException,
@@ -416,11 +416,11 @@ public interface MQAdminExt extends MQAdmin {
      * @param group
      * @param timestamp
      * @param isForce
+     * @return
      * @throws RemotingException
      * @throws MQBrokerException
      * @throws InterruptedException
      * @throws MQClientException
-     * @return
      */
     public Map<MessageQueue, Long> resetOffsetByTimestamp(String topic, String group, long timestamp,
                                                           boolean isForce) throws RemotingException, MQBrokerException, InterruptedException,
@@ -512,8 +512,7 @@ public interface MQAdminExt extends MQAdmin {
     /**
      * 触发清理失效的消费队列
      *
-     * @param cluster
-     *            null则表示所有集群
+     * @param cluster null则表示所有集群
      * @return 清理是否成功
      * @throws RemotingConnectException
      * @throws RemotingSendRequestException

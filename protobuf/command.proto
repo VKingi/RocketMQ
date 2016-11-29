@@ -1,7 +1,9 @@
-syntax="proto2";
+syntax = "proto2";
 
 import "broker_header.proto";
+
 import "filtersrv_header.proto";
+
 import "namesrv_header.proto";
 
 package com.alibaba.rocketmq.common.protocol.protobuf;

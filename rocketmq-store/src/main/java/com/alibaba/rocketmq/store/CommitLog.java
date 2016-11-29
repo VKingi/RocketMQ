@@ -47,9 +47,9 @@ import java.util.concurrent.TimeUnit;
  * @since 2013-7-21
  */
 public class CommitLog {
-    private static final Logger log = LoggerFactory.getLogger(LoggerName.StoreLoggerName);
     // Message's MAGIC CODE daa320a7
     public final static int MessageMagicCode = 0xAABBCCDD ^ 1880681586 + 8;
+    private static final Logger log = LoggerFactory.getLogger(LoggerName.StoreLoggerName);
     // End of file empty MAGIC CODE cbd43194
     private final static int BlankMagicCode = 0xBBCCDDEE ^ 1880681586 + 8;
     private final MapedFileQueue mapedFileQueue;
@@ -211,7 +211,7 @@ public class CommitLog {
      * check the message and returns the message size
      *
      * @return 0 Come the end of the file // >0 Normal messages // -1 Message
-     *         checksum failure
+     * checksum failure
      */
     public DispatchRequest checkMessageAndReturnSize(java.nio.ByteBuffer byteBuffer, final boolean checkCRC, final boolean readBody) {
         try {

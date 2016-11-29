@@ -19,8 +19,8 @@
             <scope>test</scope>
         </dependency>
         <!--<dependency>-->
-            <!--<groupId>${project.groupId}</groupId>-->
-            <!--<artifactId>rocketmq-remoting</artifactId>-->
+        <!--<groupId>${project.groupId}</groupId>-->
+        <!--<artifactId>rocketmq-remoting</artifactId>-->
         <!--</dependency>-->
         <dependency>
             <groupId>com.alibaba</groupId>

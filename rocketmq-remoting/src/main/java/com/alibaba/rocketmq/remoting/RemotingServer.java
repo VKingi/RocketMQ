@@ -60,7 +60,7 @@ public interface RemotingServer extends RemotingService {
 
 
     public MessageCommand invokeSync(final Channel channel, final MessageCommand request,
-                                      final long timeoutMillis) throws InterruptedException, RemotingSendRequestException,
+                                     final long timeoutMillis) throws InterruptedException, RemotingSendRequestException,
             RemotingTimeoutException;
 
 

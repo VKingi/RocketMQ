@@ -45,7 +45,6 @@ import static com.alibaba.rocketmq.common.protocol.protobuf.Command.RpcType.ONE_
 
 
 /**
- *
  * @author shijia.wxr<vintage.wang@gmail.com>
  * @since 2013-7-26
  */
@@ -63,7 +62,7 @@ public abstract class AbstractSendMessageProcessor implements NettyRequestProces
     public AbstractSendMessageProcessor(final BrokerController brokerController) {
         this.brokerController = brokerController;
         this.storeHost = new InetSocketAddress(brokerController.getBrokerConfig().getBrokerIP1(), brokerController
-                        .getNettyServerConfig().getListenPort());
+                .getNettyServerConfig().getListenPort());
     }
 
     protected SendMessageContext buildMsgContext(ChannelHandlerContext ctx, SendMessageRequestHeader requestHeader) {
@@ -85,7 +84,7 @@ public abstract class AbstractSendMessageProcessor implements NettyRequestProces
         SendMessageRequestHeader requestHeader = null;
         switch (request.getCode()) {
             case RequestCode.SEND_MESSAGE:
-                    requestHeader = request.getSendMessageRequestHeader();
+                requestHeader = request.getSendMessageRequestHeader();
             default:
                 break;
         }
@@ -93,7 +92,7 @@ public abstract class AbstractSendMessageProcessor implements NettyRequestProces
     }
 
     protected MessageCommand msgCheck(final ChannelHandlerContext ctx, final SendMessageRequestHeader requestHeader,
-                                       final MessageCommand.Builder responseBuilder) {
+                                      final MessageCommand.Builder responseBuilder) {
         if (!PermName.isWriteable(this.brokerController.getBrokerConfig().getBrokerPermission())
                 && this.brokerController.getTopicConfigManager().isOrderTopic(requestHeader.getTopic())) {
             responseBuilder.setCode(ResponseCode.NO_PERMISSION);

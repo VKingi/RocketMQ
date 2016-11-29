@@ -33,16 +33,11 @@ public class MQHelper {
     /**
      * Reset consumer topic offset according to time
      *
-     * @param messageModel
-     *            which model
-     * @param instanceName
-     *            which instance
-     * @param consumerGroup
-     *            consumer group
-     * @param topic
-     *            topic
-     * @param timestamp
-     *            time
+     * @param messageModel  which model
+     * @param instanceName  which instance
+     * @param consumerGroup consumer group
+     * @param topic         topic
+     * @param timestamp     time
      * @throws Exception
      */
     public static void resetOffsetByTimestamp(//

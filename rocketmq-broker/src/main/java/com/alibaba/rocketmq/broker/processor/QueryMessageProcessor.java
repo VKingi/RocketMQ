@@ -85,8 +85,8 @@ public class QueryMessageProcessor implements NettyRequestProcessor {
 
         final MessageCommand.Builder responseBuilder = CommandUtil.createResponseBuilder(request.getOpaque())
                 .setQueryMessageResponseHeader(QueryMessageResponseHeader.newBuilder()
-                .setIndexLastUpdatePhyOffset(queryMessageResult.getIndexLastUpdatePhyoffset())
-                .setIndexLastUpdateTimestamp(queryMessageResult.getIndexLastUpdateTimestamp()));
+                        .setIndexLastUpdatePhyOffset(queryMessageResult.getIndexLastUpdatePhyoffset())
+                        .setIndexLastUpdateTimestamp(queryMessageResult.getIndexLastUpdateTimestamp()));
         // 说明找到消息
         if (queryMessageResult.getBufferTotalSize() > 0) {
             responseBuilder.setCode(ResponseCode.SUCCESS);

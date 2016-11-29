@@ -227,7 +227,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
 
     @Override
     public MessageCommand invokeSync(final Channel channel, final MessageCommand request,
-                                      final long timeoutMillis) throws InterruptedException, RemotingSendRequestException,
+                                     final long timeoutMillis) throws InterruptedException, RemotingSendRequestException,
             RemotingTimeoutException {
         return this.invokeSyncImpl(channel, request, timeoutMillis);
     }

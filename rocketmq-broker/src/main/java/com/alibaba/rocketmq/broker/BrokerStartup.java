@@ -279,7 +279,7 @@ public class BrokerStartup {
             // 启动服务控制对象
             controller.start();
             String tip = "The broker[" + controller.getBrokerConfig().getBrokerName() + ", "
-                            + controller.getBrokerAddr() + "] boot success.";
+                    + controller.getBrokerAddr() + "] boot success.";
 
             if (null != controller.getBrokerConfig().getNamesrvAddr()) {
                 tip += " and name server is " + controller.getBrokerConfig().getNamesrvAddr();

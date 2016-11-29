@@ -21,7 +21,6 @@ import java.nio.charset.Charset;
 
 
 /**
- *
  * @author shijia.wxr<vintage.wang@gmail.com>
  * @since 2013-7-13
  */

@@ -185,10 +185,8 @@ public class MapedFile extends ReferenceResource {
     /**
      * 向MapedBuffer追加消息<br>
      *
-     * @param msg
-     *            要追加的消息
-     * @param cb
-     *            用来对消息进行序列化，尤其对于依赖MapedFile Offset的属性进行动态序列化
+     * @param msg 要追加的消息
+     * @param cb  用来对消息进行序列化，尤其对于依赖MapedFile Offset的属性进行动态序列化
      * @return 是否成功，写入多少数据
      */
     public AppendMessageResult appendMessage(final Object msg, final AppendMessageCallback cb) {
@@ -245,8 +243,7 @@ public class MapedFile extends ReferenceResource {
     /**
      * 消息刷盘
      *
-     * @param flushLeastPages
-     *            至少刷几个page
+     * @param flushLeastPages 至少刷几个page
      * @return
      */
     public int commit(final int flushLeastPages) {

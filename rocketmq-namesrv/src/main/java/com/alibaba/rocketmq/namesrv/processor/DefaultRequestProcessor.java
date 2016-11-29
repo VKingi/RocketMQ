@@ -152,7 +152,7 @@ public class DefaultRequestProcessor implements NettyRequestProcessor {
 
         // 获取顺序消息 topic 列表
         byte[] jsonValue = this.namesrvController.getKvConfigManager().getKVListByNamespace(
-                        NamesrvUtil.NAMESPACE_ORDER_TOPIC_CONFIG);
+                NamesrvUtil.NAMESPACE_ORDER_TOPIC_CONFIG);
 
         RegisterBrokerResponseHeader.Builder headerBuilder = RegisterBrokerResponseHeader.newBuilder();
         if (StringUtils.isNotEmpty(result.getMasterAddr())) {

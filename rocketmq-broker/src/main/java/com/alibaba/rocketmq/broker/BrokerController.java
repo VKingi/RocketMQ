@@ -649,7 +649,7 @@ public class BrokerController {
     public void addDeleteTopicTask() {
         this.scheduledExecutorService.schedule(() -> {
             int removedTopicCnt = BrokerController.this.messageStore.cleanUnusedTopic(BrokerController.this
-                            .getTopicConfigManager().getTopicConfigTable().keySet());
+                    .getTopicConfigManager().getTopicConfigTable().keySet());
             log.info("addDeleteTopicTask removed topic count {}", removedTopicCnt);
         }, 5, TimeUnit.MINUTES);
     }

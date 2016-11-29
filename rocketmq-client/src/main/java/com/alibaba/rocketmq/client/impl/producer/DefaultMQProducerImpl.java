@@ -946,8 +946,8 @@ public class DefaultMQProducerImpl implements MQProducerInner {
         String transactionId = sendResult.getTransactionId();
         final String brokerAddr = this.mQClientFactory.findBrokerAddressInPublish(sendResult.getMessageQueue().getBrokerName());
         EndTransactionRequestHeader.Builder requestHeaderBuilder = EndTransactionRequestHeader.newBuilder()
-        .setTransactionId(transactionId)
-        .setCommitLogOffset(id.getOffset());
+                .setTransactionId(transactionId)
+                .setCommitLogOffset(id.getOffset());
         switch (localTransactionState) {
             case COMMIT_MESSAGE:
                 requestHeaderBuilder.setCommitOrRollback(MessageSysFlag.TransactionCommitType);
@@ -975,7 +975,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
         EndTransactionRequestHeader requestHeader = requestHeaderBuilder.build();
 
         String remark = localException != null ? ("executeLocalTransactionBranch exception: " + localException
-                        .toString()) : null;
+                .toString()) : null;
         this.mQClientFactory.getMQClientAPIImpl().endTransactionOneway(brokerAddr, requestHeader, remark,
                 this.defaultMQProducer.getSendMsgTimeout());
     }

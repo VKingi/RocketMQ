@@ -145,6 +145,10 @@ public class Message implements Serializable {
         return this.getProperty(MessageConst.PROPERTY_KEYS);
     }
 
+    public void setKeys(String keys) {
+        this.putProperty(MessageConst.PROPERTY_KEYS, keys);
+    }
+
     public void setKeys(Collection<String> keys) {
         StringBuffer sb = new StringBuffer();
         for (String k : keys) {
@@ -153,10 +157,6 @@ public class Message implements Serializable {
         }
 
         this.setKeys(sb.toString().trim());
-    }
-
-    public void setKeys(String keys) {
-        this.putProperty(MessageConst.PROPERTY_KEYS, keys);
     }
 
     public int getDelayTimeLevel() {

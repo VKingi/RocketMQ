@@ -54,7 +54,7 @@ public class ClientConfig {
 
         sb.append("@");
         sb.append(this.getInstanceName());
-        if(!UtilAll.isBlank(this.unitName)) {
+        if (!UtilAll.isBlank(this.unitName)) {
             sb.append("@");
             sb.append(this.unitName);
         }

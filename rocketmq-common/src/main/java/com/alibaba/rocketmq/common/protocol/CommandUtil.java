@@ -15,11 +15,9 @@ import static com.alibaba.rocketmq.common.protocol.protobuf.Command.RpcType.RESP
  */
 public class CommandUtil {
 
-    private static volatile int ConfigVersion = -1;
-
-    private static AtomicInteger RequestId = new AtomicInteger(0);
-
     public static String RemotingVersionKey = "rocketmq.remoting.version";
+    private static volatile int ConfigVersion = -1;
+    private static AtomicInteger RequestId = new AtomicInteger(0);
 
     public static MessageCommand createResponseCommand(int code, int opaque, String remark) {
         return MessageCommand.newBuilder()

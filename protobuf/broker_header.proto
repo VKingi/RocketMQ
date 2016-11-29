@@ -1,4 +1,4 @@
-syntax="proto2";
+syntax = "proto2";
 
 package com.alibaba.rocketmq.common.protocol.protobuf;
 
@@ -37,6 +37,7 @@ enum TopicFilterType {
     SINGLE_TAG = 1;
     MULTI_TAG = 2;
 }
+
 message CreateTopicRequestHeader {
     required string topic = 1;
     required string defaultTopic = 2;
