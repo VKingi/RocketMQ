@@ -963,17 +963,11 @@ public class CommitLog {
             MessageExtBrokerInner msgInner = (MessageExtBrokerInner) msg;
             // PHY OFFSET
             long wroteOffset = fileFromOffset + byteBuffer.position();
-            String msgId =
-                    MessageDecoder.createMessageId(this.msgIdMemory, msgInner.getStoreHostBytes(),
-                            wroteOffset);
+            String msgId = MessageDecoder.createMessageId(this.msgIdMemory, msgInner.getStoreHostBytes(), wroteOffset);
 
             // Record ConsumeQueue information
             String key = msgInner.getTopic() + "-" + msgInner.getQueueId();
-            Long queueOffset = CommitLog.this.topicQueueTable.get(key);
-            if (null == queueOffset) {
-                queueOffset = 0L;
-                CommitLog.this.topicQueueTable.put(key, queueOffset);
-            }
+            Long queueOffset = CommitLog.this.topicQueueTable.computeIfAbsent(key, k -> 0L);
 
             // Transaction messages that require special handling
             final int tranType = MessageSysFlag.getTransactionValue(msgInner.getSysFlag());

@@ -46,7 +46,7 @@ public class MapedFileQueue {
     // 每个文件的大小
     private final int mapedFileSize;
     // 各个文件
-    private final List<MapedFile> mapedFiles = new ArrayList<MapedFile>();
+    private final List<MapedFile> mapedFiles = new ArrayList<>();
     // 读写锁（针对mapedFiles）
     private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
     // 预分配MapedFile对象服务
@@ -57,13 +57,35 @@ public class MapedFileQueue {
     private volatile long storeTimestamp = 0;
 
 
-    public MapedFileQueue(final String storePath, int mapedFileSize,
-                          AllocateMapedFileService allocateMapedFileService) {
+    public MapedFileQueue(final String storePath, int mapedFileSize, AllocateMapedFileService allocateMapedFileService) {
         this.storePath = storePath;
         this.mapedFileSize = mapedFileSize;
         this.allocateMapedFileService = allocateMapedFileService;
     }
 
+    public void checkSelf() {
+        this.readWriteLock.readLock().lock();
+        try {
+            if (!this.mapedFiles.isEmpty()) {
+                MapedFile first = this.mapedFiles.get(0);
+                MapedFile last = this.mapedFiles.get(this.mapedFiles.size() - 1);
+
+                int sizeCompute = (int) ((last.getFileFromOffset() - first.getFileFromOffset()) / this.mapedFileSize) + 1;
+                int sizeReal = this.mapedFiles.size();
+                if (sizeCompute != sizeReal) {
+                    logError.error(
+                            "[BUG]The mapedfile queue's data is damaged, {} mapedFileSize={} sizeCompute={} sizeReal={}\n{}", //
+                            this.storePath,//
+                            this.mapedFileSize,//
+                            sizeCompute,//
+                            sizeReal,//
+                            this.mapedFiles.toString());
+                }
+            }
+        } finally {
+            this.readWriteLock.readLock().unlock();
+        }
+    }
 
     public MapedFile getMapedFileByTime(final long timestamp) {
         Object[] mfs = this.copyMapedFiles(0);
@@ -71,8 +93,8 @@ public class MapedFileQueue {
         if (null == mfs)
             return null;
 
-        for (int i = 0; i < mfs.length; i++) {
-            MapedFile mapedFile = (MapedFile) mfs[i];
+        for (Object mf : mfs) {
+            MapedFile mapedFile = (MapedFile) mf;
             if (mapedFile.getLastModifiedTimestamp() >= timestamp) {
                 return mapedFile;
             }
@@ -80,7 +102,6 @@ public class MapedFileQueue {
 
         return (MapedFile) mfs[mfs.length - 1];
     }
-
 
     private Object[] copyMapedFiles(final int reservedMapedFiles) {
         Object[] mfs = null;
@@ -97,21 +118,21 @@ public class MapedFileQueue {
         } finally {
             this.readWriteLock.readLock().unlock();
         }
+
         return mfs;
     }
-
 
     /**
      * recover时调用，不需要加锁
      */
     public void truncateDirtyFiles(long offset) {
-        List<MapedFile> willRemoveFiles = new ArrayList<MapedFile>();
+        List<MapedFile> willRemoveFiles = new ArrayList<>();
 
         for (MapedFile file : this.mapedFiles) {
             long fileTailOffset = file.getFileFromOffset() + this.mapedFileSize;
             if (fileTailOffset > offset) {
                 if (offset >= file.getFileFromOffset()) {
-                    file.setWrotePostion((int) (offset % this.mapedFileSize));
+                    file.setWrotePosition((int) (offset % this.mapedFileSize));
                     file.setCommittedPosition((int) (offset % this.mapedFileSize));
                 } else {
                     // 将文件删除掉
@@ -123,7 +144,6 @@ public class MapedFileQueue {
 
         this.deleteExpiredFile(willRemoveFiles);
     }
-
 
     /**
      * 删除文件只能从头开始删
@@ -146,39 +166,40 @@ public class MapedFileQueue {
         }
     }
 
-
     public boolean load() {
         File dir = new File(this.storePath);
         File[] files = dir.listFiles();
-        if (files != null) {
-            // ascending order
-            Arrays.sort(files);
-            for (File file : files) {
-                // 校验文件大小是否匹配
-                if (file.length() != this.mapedFileSize) {
-                    log.warn(file + "\t" + file.length()
-                            + " length not matched message store config value, ignore it");
-                    return true;
-                }
+        if (files == null) {
+            return true;
+        }
 
-                // 恢复队列
-                try {
-                    MapedFile mapedFile = new MapedFile(file.getPath(), mapedFileSize);
+        // ascending order
+        Arrays.sort(files);
+        for (File file : files) {
+            // 校验文件大小是否匹配
+            if (file.length() != this.mapedFileSize) {
+                log.warn(file + "\t" + file.length() + " length not matched message store config value, ignore it");
 
-                    mapedFile.setWrotePostion(this.mapedFileSize);
-                    mapedFile.setCommittedPosition(this.mapedFileSize);
-                    this.mapedFiles.add(mapedFile);
-                    log.info("load " + file.getPath() + " OK");
-                } catch (IOException e) {
-                    log.error("load file " + file + " error", e);
-                    return false;
-                }
+                return true;
+            }
+
+            // 恢复队列
+            try {
+                MapedFile mapedFile = new MapedFile(file.getPath(), mapedFileSize);
+
+                mapedFile.setWrotePosition(this.mapedFileSize);
+                mapedFile.setCommittedPosition(this.mapedFileSize);
+                this.mapedFiles.add(mapedFile);
+                log.info("load " + file.getPath() + " OK");
+            } catch (IOException e) {
+                log.error("load file " + file + " error", e);
+
+                return false;
             }
         }
 
         return true;
     }
-
 
     /**
      * 刷盘进度落后了多少
@@ -191,24 +212,21 @@ public class MapedFileQueue {
         if (committed != 0) {
             MapedFile mapedFile = this.getLastMapedFile();
             if (mapedFile != null) {
-                return (mapedFile.getFileFromOffset() + mapedFile.getWrotePostion()) - committed;
+                return (mapedFile.getFileFromOffset() + mapedFile.getWrotePosition()) - committed;
             }
         }
 
         return 0;
     }
 
-
     public MapedFile getLastMapedFile() {
         return this.getLastMapedFile(0);
     }
 
-
     /**
      * 获取最后一个MapedFile对象，如果一个都没有，则新创建一个，如果最后一个写满了，则新创建一个
      *
-     * @param startOffset
-     *            如果创建新的文件，起始offset
+     * @param startOffset 如果创建新的文件，起始offset
      * @return
      */
     public MapedFile getLastMapedFile(final long startOffset) {
@@ -230,15 +248,13 @@ public class MapedFileQueue {
 
         if (createOffset != -1) {
             String nextFilePath = this.storePath + File.separator + UtilAll.offset2FileName(createOffset);
-            String nextNextFilePath =
-                    this.storePath + File.separator
-                            + UtilAll.offset2FileName(createOffset + this.mapedFileSize);
+            String nextNextFilePath = this.storePath + File.separator
+                    + UtilAll.offset2FileName(createOffset + this.mapedFileSize);
             MapedFile mapedFile = null;
 
             if (this.allocateMapedFileService != null) {
-                mapedFile =
-                        this.allocateMapedFileService.putRequestAndReturnMapedFile(nextFilePath,
-                                nextNextFilePath, this.mapedFileSize);
+                mapedFile = this.allocateMapedFileService.putRequestAndReturnMapedFile(nextFilePath,
+                        nextNextFilePath, this.mapedFileSize);
             } else {
                 try {
                     mapedFile = new MapedFile(nextFilePath, this.mapedFileSize);
@@ -262,7 +278,6 @@ public class MapedFileQueue {
         return mapedFileLast;
     }
 
-
     /**
      * 获取队列的最小Offset，如果队列为空，则返回-1
      */
@@ -281,24 +296,22 @@ public class MapedFileQueue {
         return -1;
     }
 
-
     public long getMaxOffset() {
         try {
             this.readWriteLock.readLock().lock();
             if (!this.mapedFiles.isEmpty()) {
                 int lastIndex = this.mapedFiles.size() - 1;
                 MapedFile mapedFile = this.mapedFiles.get(lastIndex);
-                return mapedFile.getFileFromOffset() + mapedFile.getWrotePostion();
+                return mapedFile.getFileFromOffset() + mapedFile.getWrotePosition();
             }
         } catch (Exception e) {
-            log.error("getMinOffset has exception.", e);
+            log.error("getMaxOffset has exception.", e);
         } finally {
             this.readWriteLock.readLock().unlock();
         }
 
         return 0;
     }
-
 
     /**
      * 恢复时调用
@@ -313,16 +326,13 @@ public class MapedFileQueue {
         }
     }
 
-
     /**
      * 根据文件过期时间来删除物理队列文件
      */
-    public int deleteExpiredFileByTime(//
-                                       final long expiredTime, //
+    public int deleteExpiredFileByTime(final long expiredTime, //
                                        final int deleteFilesInterval, //
                                        final long intervalForcibly,//
-                                       final boolean cleanImmediately//
-    ) {
+                                       final boolean cleanImmediately) {
         Object[] mfs = this.copyMapedFiles(0);
 
         if (null == mfs)
@@ -331,30 +341,28 @@ public class MapedFileQueue {
         // 最后一个文件处于写状态，不能删除
         int mfsLength = mfs.length - 1;
         int deleteCount = 0;
-        List<MapedFile> files = new ArrayList<MapedFile>();
-        if (null != mfs) {
-            for (int i = 0; i < mfsLength; i++) {
-                MapedFile mapedFile = (MapedFile) mfs[i];
-                long liveMaxTimestamp = mapedFile.getLastModifiedTimestamp() + expiredTime;
-                if (System.currentTimeMillis() >= liveMaxTimestamp//
-                        || cleanImmediately) {
-                    if (mapedFile.destroy(intervalForcibly)) {
-                        files.add(mapedFile);
-                        deleteCount++;
+        List<MapedFile> files = new ArrayList<>();
+        for (int i = 0; i < mfsLength; i++) {
+            MapedFile mapedFile = (MapedFile) mfs[i];
+            long liveMaxTimestamp = mapedFile.getLastModifiedTimestamp() + expiredTime;
+            if (System.currentTimeMillis() >= liveMaxTimestamp//
+                    || cleanImmediately) {
+                if (mapedFile.destroy(intervalForcibly)) {
+                    files.add(mapedFile);
+                    deleteCount++;
 
-                        if (files.size() >= DeleteFilesBatchMax) {
-                            break;
-                        }
-
-                        if (deleteFilesInterval > 0 && (i + 1) < mfsLength) {
-                            try {
-                                Thread.sleep(deleteFilesInterval);
-                            } catch (InterruptedException e) {
-                            }
-                        }
-                    } else {
+                    if (files.size() >= DeleteFilesBatchMax) {
                         break;
                     }
+
+                    if (deleteFilesInterval > 0 && (i + 1) < mfsLength) {
+                        try {
+                            Thread.sleep(deleteFilesInterval);
+                        } catch (InterruptedException e) {
+                        }
+                    }
+                } else {
+                    break;
                 }
             }
         }
@@ -363,48 +371,45 @@ public class MapedFileQueue {
 
         return deleteCount;
     }
-
 
     /**
      * 根据物理队列最小Offset来删除逻辑队列
      *
-     * @param offset
-     *            物理队列最小offset
+     * @param offset 物理队列最小offset
      */
     public int deleteExpiredFileByOffset(long offset, int unitSize) {
         Object[] mfs = this.copyMapedFiles(0);
+        if (mfs == null) return 0;
 
-        List<MapedFile> files = new ArrayList<MapedFile>();
+        List<MapedFile> files = new ArrayList<>();
         int deleteCount = 0;
-        if (null != mfs) {
-            // 最后一个文件处于写状态，不能删除
-            int mfsLength = mfs.length - 1;
+        // 最后一个文件处于写状态，不能删除
+        int mfsLength = mfs.length - 1;
 
-            // 这里遍历范围 0 ... last - 1
-            for (int i = 0; i < mfsLength; i++) {
-                boolean destroy = true;
-                MapedFile mapedFile = (MapedFile) mfs[i];
-                SelectMapedBufferResult result = mapedFile.selectMapedBuffer(this.mapedFileSize - unitSize);
-                if (result != null) {
-                    long maxOffsetInLogicQueue = result.getByteBuffer().getLong();
-                    result.release();
-                    // 当前文件是否可以删除
-                    destroy = (maxOffsetInLogicQueue < offset);
-                    if (destroy) {
-                        log.info("physic min offset " + offset + ", logics in current mapedfile max offset "
-                                + maxOffsetInLogicQueue + ", delete it");
-                    }
-                } else {
-                    log.warn("this being not excuted forever.");
-                    break;
+        // 这里遍历范围 0 ... last - 1
+        for (int i = 0; i < mfsLength; i++) {
+            boolean destroy = true;
+            MapedFile mapedFile = (MapedFile) mfs[i];
+            SelectMapedBufferResult result = mapedFile.selectMapedBuffer(this.mapedFileSize - unitSize);
+            if (result != null) {
+                long maxOffsetInLogicQueue = result.getByteBuffer().getLong();
+                result.release();
+                // 当前文件是否可以删除
+                destroy = (maxOffsetInLogicQueue < offset);
+                if (destroy) {
+                    log.info("physic min offset " + offset + ", logics in current mapped file max offset "
+                            + maxOffsetInLogicQueue + ", delete it");
                 }
+            } else {
+                log.warn("this being not executed forever.");
+                break;
+            }
 
-                if (destroy && mapedFile.destroy(1000 * 60)) {
-                    files.add(mapedFile);
-                    deleteCount++;
-                } else {
-                    break;
-                }
+            if (destroy && mapedFile.destroy(1000 * 60)) {
+                files.add(mapedFile);
+                deleteCount++;
+            } else {
+                break;
             }
         }
 
@@ -412,7 +417,6 @@ public class MapedFileQueue {
 
         return deleteCount;
     }
-
 
     /**
      * 返回值表示是否全部刷盘完成
@@ -436,23 +440,20 @@ public class MapedFileQueue {
         return result;
     }
 
-
     public MapedFile findMapedFileByOffset(final long offset, final boolean returnFirstOnNotFound) {
         try {
             this.readWriteLock.readLock().lock();
             MapedFile mapedFile = this.getFirstMapedFile();
 
             if (mapedFile != null) {
-                int index =
-                        (int) ((offset / this.mapedFileSize) - (mapedFile.getFileFromOffset() / this.mapedFileSize));
+                int index = (int) ((offset / this.mapedFileSize) - (mapedFile.getFileFromOffset() / this.mapedFileSize));
                 if (index < 0 || index >= this.mapedFiles.size()) {
-                    logError
-                            .warn(
-                                    "findMapedFileByOffset offset not matched, request Offset: {}, index: {}, mapedFileSize: {}, mapedFiles count: {}, StackTrace: {}",//
-                                    offset,//
-                                    index,//
-                                    this.mapedFileSize,//
-                                    this.mapedFiles.size(),//
+                    logError.warn("findMapedFileByOffset offset not matched, request Offset: {}, index: {}, mapedFileSize: {}, " +
+                                    "mapedFiles count: {}, StackTrace: {}",
+                                    offset,
+                                    index,
+                                    this.mapedFileSize,
+                                    this.mapedFiles.size(),
                                     UtilAll.currentStackTrace());
                 }
 
@@ -473,7 +474,6 @@ public class MapedFileQueue {
         return null;
     }
 
-
     private MapedFile getFirstMapedFile() {
         if (this.mapedFiles.isEmpty()) {
             return null;
@@ -490,11 +490,9 @@ public class MapedFileQueue {
         return this.mapedFiles.get(this.mapedFiles.size() - 1);
     }
 
-
     public MapedFile findMapedFileByOffset(final long offset) {
         return findMapedFileByOffset(offset, false);
     }
-
 
     public long getMapedMemorySize() {
         long size = 0;
@@ -511,7 +509,6 @@ public class MapedFileQueue {
         return size;
     }
 
-
     public boolean retryDeleteFirstFile(final long intervalForcibly) {
         MapedFile mapedFile = this.getFirstMapedFileOnLock();
         if (mapedFile != null) {
@@ -520,7 +517,7 @@ public class MapedFileQueue {
                 boolean result = mapedFile.destroy(intervalForcibly);
                 if (result) {
                     log.warn("the mapedfile redelete OK, " + mapedFile.getFileName());
-                    List<MapedFile> tmps = new ArrayList<MapedFile>();
+                    List<MapedFile> tmps = new ArrayList<>();
                     tmps.add(mapedFile);
                     this.deleteExpiredFile(tmps);
                 } else {
@@ -534,7 +531,6 @@ public class MapedFileQueue {
         return false;
     }
 
-
     public MapedFile getFirstMapedFileOnLock() {
         try {
             this.readWriteLock.readLock().lock();
@@ -543,7 +539,6 @@ public class MapedFileQueue {
             this.readWriteLock.readLock().unlock();
         }
     }
-
 
     /**
      * 关闭队列，队列数据还在，但是不能访问
@@ -555,7 +550,6 @@ public class MapedFileQueue {
         }
         this.readWriteLock.readLock().unlock();
     }
-
 
     /**
      * 销毁队列，队列数据被删除，此函数有可能不成功
@@ -576,26 +570,21 @@ public class MapedFileQueue {
         this.readWriteLock.writeLock().unlock();
     }
 
-
     public long getCommittedWhere() {
         return committedWhere;
     }
-
 
     public void setCommittedWhere(long committedWhere) {
         this.committedWhere = committedWhere;
     }
 
-
     public long getStoreTimestamp() {
         return storeTimestamp;
     }
 
-
     public List<MapedFile> getMapedFiles() {
         return mapedFiles;
     }
-
 
     public int getMapedFileSize() {
         return mapedFileSize;
